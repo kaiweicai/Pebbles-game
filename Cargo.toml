@@ -1,0 +1,45 @@
+[workspace.package]
+homepage = "https://wiki.gear-tech.io/docs/examples/prerequisites"
+authors = ["Gear Foundation <hello@gear.foundation>"]
+version = "0.1.0"
+license = "MIT"
+edition = "2021"
+publish = false
+name = "pebbles-game"
+
+[package]
+name = "game"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+gstd.workspace = true
+game-io.workspace = true
+
+[build-dependencies]
+gear-wasm-builder.workspace = true
+game-io.workspace = true
+
+[dev-dependencies]
+gtest.workspace = true
+gclient.workspace = true
+tokio.workspace = true
+
+# It's necessary to include all metawasm crates in the workspace section, otherwise they'll be
+# ignored by Cargo and won't be built.
+[workspace]
+members = ["io"]
+
+[workspace.dependencies]
+gstd = "1.4.1"
+gmeta = "1.4.1"
+gear-wasm-builder = "1.4.1"
+gtest = "1.4.1"
+gclient = "1.4.1"
+game-io.path = "io"
+tokio = "1"
+xshell = "0.2"
+anyhow = "1"
+parity-scale-codec = { version = "3", default-features = false }
+scale-info = { version = "2", default-features = false }

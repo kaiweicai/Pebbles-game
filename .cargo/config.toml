@@ -1,0 +1,16 @@
+[alias]
+xtask = "r -rp xtask --"
+
+[build]
+rustflags = [
+    "-Wfuture-incompatible",
+    "-Wlet-underscore",
+    "-Wrust-2018-idioms",
+    "-Wunused",
+]
+rustdocflags = [
+    "-Dwarnings",
+    "--default-theme=ayu",
+    "-Wrustdoc::private_doc_tests",
+    "-Wrustdoc::unescaped_backticks",
+]
