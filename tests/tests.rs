@@ -1,7 +1,5 @@
-#![no_std]
-
-use gstd::{debug, prelude::*};
-use gtest::{Log, Program, System};
+use gstd::{prelude::*};
+use gtest::{Program, System};
 
 use game_io::*;
 
@@ -21,16 +19,11 @@ fn test() {
 
     assert!(!run_result.main_failed());
     let game_state: GameStatus = program.read_state(b"").unwrap();
-    debug!("game_state: {:?}", game_state);
+    println!("game_state: {:?}", game_state);
     assert_eq!(game_state.pebbles_count, 15);
     assert_eq!(game_state.max_pebbles_per_turn, 12);
     // assert_eq!(game_state.pebbles_remaining, 15);
     assert!(game_state.first_player == Player::User || game_state.first_player == Player::Program);
-    // result = program.send(2, PingPong::Pong);
-    //
-    // assert!(!result.main_failed());
-    //
-    // // State reading
     //
     // // All state
     //

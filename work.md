@@ -1,0 +1,2 @@
+gear program address:https://idea.gear-tech.io/state/full/0x4071afc1581286ce1c2c493610faceb7e99b5e8340e4f3584bde4930f0e839ae?node=wss%3A%2F%2Ftestnet.vara.network
+project github addree:https://github.com/kaiweicai/Pebbles-game
