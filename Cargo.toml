@@ -34,7 +34,7 @@ members = ["io"]
 [workspace.dependencies]
 gstd = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.1" }
 gmeta = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.1" }
-gear-wasm-builder = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.1" }
+gear-wasm-builder = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.2" }
 gtest = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.1" }
 gclient = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.1" }
 game-io.path = "io"
