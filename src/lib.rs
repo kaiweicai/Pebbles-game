@@ -125,7 +125,7 @@ extern "C" fn handle() {
 }
 
 #[no_mangle]
-extern fn state() {
+pub extern "C" fn state() {
     let gmst = unsafe { PEBBLE_GAME.as_ref().expect("State isn't initialized") };
     msg::reply(gmst.clone(), 0).expect("Failed to share state");
 }
