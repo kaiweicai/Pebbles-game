@@ -1,164 +1,231 @@
-use gstd::{prelude::*};
+use gstd::Encode;
 use gtest::{Program, System};
+use pebble_game::PebbleGame;
+use pebble_game_io::{DifficultyLevel, PebblesAction, PebblesEvent, PebblesInit, Player};
 
-use game_io::*;
+const USERS: &[u64] = &[3, 4, 5];
 
-#[test]
-fn test() {
-    let system = System::new();
+fn init_game(sys: &System, total: u32, turn_max: u32) {
+    sys.init_logger();
 
-    system.init_logger();
+    let game = Program::current_opt(sys);
+    let res = game.send(
+        USERS[0],
+        PebblesInit {
+            pebbles_count: total,
+            max_pebbles_per_turn: turn_max,
+            difficulty: DifficultyLevel::Easy,
+        },
+    );
 
-    let program = Program::current(&system);
-    let pebbles = PebblesInit {
-        difficult_level: DifficultLevel::Easy,
-        pebbles_count: 15,
-        max_pebbles_per_turn: 12,
-    }; // Init state
-    let run_result = program.send(2, pebbles);
+    assert!(!res.main_failed());
 
-    assert!(!run_result.main_failed());
-    let game_state: GameStatus = program.read_state(b"").unwrap();
-    println!("game_state: {:?}", game_state);
-    assert_eq!(game_state.pebbles_count, 15);
-    assert_eq!(game_state.max_pebbles_per_turn, 12);
-    // assert_eq!(game_state.pebbles_remaining, 15);
-    assert!(game_state.first_player == Player::User || game_state.first_player == Player::Program);
-    //
-    // // All state
-    //
-    // let mut expected_state = vec![];
-    //
-    // for mut actor in 0..=100 {
-    //     actor += 2;
-    //     result = program.send(actor, PingPong::Ping);
-    //
-    //     assert!(result.contains(&Log::builder().payload(PingPong::Pong)));
-    //
-    //     expected_state.push((actor.into(), 1))
-    // }
-    //
-    // let mut state: Vec<(ActorId, u128)> = program.read_state(b"").unwrap();
-    //
-    // expected_state.sort_unstable();
-    // state.sort_unstable();
-    //
-    // assert_eq!(state, expected_state);
-    //
-    // // Querying `StateQuery::PingCount` from the `query` metafunction
-    //
-    // result = program.send(2, PingPong::Ping);
-    //
-    // assert!(result.contains(&Log::builder().payload(PingPong::Pong)));
-    //
-    // let StateQueryReply::PingCount(ping_count) = program
-    //     .read_state_using_wasm(
-    //         b"",
-    //         "query",
-    //         state_binary.clone(),
-    //         Some(StateQuery::PingCount(ActorId::from(2))),
-    //     )
-    //     .unwrap()
-    // else {
-    //     unreachable!()
-    // };
-    //
-    // assert_eq!(ping_count, 2);
-    //
-    // // Querying the state using the `pingers` metafunction
-    //
-    // let mut pingers: Vec<ActorId> = program
-    //     .read_state_using_wasm::<(), _, _>(b"", "pingers", state_binary, None)
-    //     .unwrap();
-    //
-    // pingers.sort_unstable();
-    //
-    // assert_eq!(
-    //     expected_state
-    //         .into_iter()
-    //         .map(|(pinger, _)| pinger)
-    //         .collect::<Vec<ActorId>>(),
-    //     pingers,
-    // );
+    let gm: PebbleGame = game.read_state(0).expect("Invalid state.");
+    assert_eq!(gm.pebbles_count, total,"pebbles_count error, {}, {}",gm.pebbles_count,total);
+    assert_eq!(gm.max_pebbles_per_turn, turn_max);
+    match gm.first_player {
+        Player::User => assert_eq!(gm.pebbles_count, gm.pebbles_remaining),
+        Player::Program => assert_eq!(gm.pebbles_count, gm.pebbles_remaining + gm.program_lastmove),
+    }
 }
 
-// fn get_state_binary() -> Vec<u8> {
-//     fs::read("target/wasm32-unknown-unknown/debug/template_state.meta.wasm").unwrap()
-// }
-//
-// const ALICE: [u8; 32] = [
-//     212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133,
-//     76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125,
-// ];
-//
-// #[tokio::test]
-// async fn gclient_test() -> Result<()> {
-//     let wasm_binary = fs::read("target/wasm32-unknown-unknown/debug/template.opt.wasm").unwrap();
-//     let client = GearApi::dev_from_path("target/tmp/gear").await?;
-//     let mut listener = client.subscribe().await?;
-//
-//     let mut gas_limit = client
-//         .calculate_upload_gas(None, wasm_binary.clone(), vec![], 0, true)
-//         .await?
-//         .min_limit;
-//     let (mut message_id, program_id, _) = client
-//         .upload_program_bytes(
-//             wasm_binary,
-//             gclient::now_micros().to_le_bytes(),
-//             [],
-//             gas_limit,
-//             0,
-//         )
-//         .await?;
-//
-//     assert!(listener.message_processed(message_id).await?.succeed());
-//
-//     gas_limit = client
-//         .calculate_handle_gas(None, program_id, PingPong::Ping.encode(), 0, true)
-//         .await?
-//         .min_limit;
-//     (message_id, _) = client
-//         .send_message(program_id, PingPong::Ping, gas_limit, 0)
-//         .await?;
-//
-//     let (_, raw_reply, _) = listener.reply_bytes_on(message_id).await?;
-//
-//     assert_eq!(
-//         PingPong::Pong,
-//         Decode::decode(
-//             &mut raw_reply
-//                 .expect("action failed, received an error message instead of a reply")
-//                 .as_slice()
-//         )?
-//     );
-//
-//     let state_binary = get_state_binary();
-//
-//     assert_eq!(
-//         StateQueryReply::PingCount(1),
-//         client
-//             .read_state_using_wasm(
-//                 program_id,
-//                 vec![],
-//                 "query",
-//                 state_binary.clone(),
-//                 Some(StateQuery::PingCount(ActorId::from(ALICE)))
-//             )
-//             .await?
-//     );
-//
-//     assert_eq!(
-//         StateQueryReply::Pingers(vec![ALICE.into()]),
-//         client
-//             .read_state_using_wasm(
-//                 program_id,
-//                 vec![],
-//                 "query",
-//                 state_binary,
-//                 Some(StateQuery::Pingers)
-//             )
-//             .await?
-//     );
-//
-//     Ok(())
-// }
+#[test]
+fn init_success() {
+    let sys = System::new();
+    sys.init_logger();
+
+    let game = Program::current_opt(&sys);
+    let res = game.send(
+        USERS[0],
+        PebblesInit {
+            pebbles_count: 10,
+            max_pebbles_per_turn: 9,
+            difficulty: DifficultyLevel::Easy,
+        },
+    );
+    assert!(!res.main_failed());
+}
+
+#[test]
+fn init_failed() {
+    let sys = System::new();
+    sys.init_logger();
+
+    let game = Program::current_opt(&sys);
+    let res = game.send(
+        USERS[0],
+        PebblesInit {
+            pebbles_count: 10,
+            max_pebbles_per_turn: 11,
+            difficulty: DifficultyLevel::Easy,
+        },
+    );
+    assert!(res.main_failed());
+}
+
+#[test]
+fn user_move() {
+    let sys = System::new();
+    init_game(&sys, 101, 3);
+    let game = sys.get_program(1).unwrap();
+    let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
+    let mut remaing = gmstate.pebbles_remaining;
+
+    let res = game.send(USERS[0], PebblesAction::Turn(1));
+    let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
+    assert!(res.contains(&(
+        USERS[0],
+        PebblesEvent::CounterTurn(gmstate.program_lastmove).encode()
+    )));
+    assert_eq!(
+        gmstate.pebbles_remaining,
+        remaing - 1 - gmstate.program_lastmove
+    );
+    remaing = gmstate.pebbles_remaining;
+    let res = game.send(USERS[0], PebblesAction::Turn(2));
+    let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
+    assert!(res.contains(&(
+        USERS[0],
+        PebblesEvent::CounterTurn(gmstate.program_lastmove).encode()
+    )));
+    assert_eq!(
+        gmstate.pebbles_remaining,
+        remaing - 2 - gmstate.program_lastmove
+    );
+    remaing = gmstate.pebbles_remaining;
+    let res = game.send(USERS[0], PebblesAction::Turn(3));
+    let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
+    assert!(res.contains(&(
+        USERS[0],
+        PebblesEvent::CounterTurn(gmstate.program_lastmove).encode()
+    )));
+    assert_eq!(
+        gmstate.pebbles_remaining,
+        remaing - 3 - gmstate.program_lastmove
+    );
+}
+
+#[test]
+fn user_move_failed() {
+    let sys = System::new();
+    init_game(&sys, 5, 2);
+    let game = sys.get_program(1).unwrap();
+
+    let res = game.send(USERS[0], PebblesAction::Turn(0));
+    assert!(res.main_failed());
+    let res = game.send(USERS[0], PebblesAction::Turn(3));
+    assert!(res.main_failed());
+}
+#[test]
+fn user_move_failed2() {
+    let sys2 = System::new();
+    init_game(&sys2, 3, 2);
+
+    let game = sys2.get_program(1).unwrap();
+    loop {
+        let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
+        if gmstate.program_lastmove == 2 {
+            break;
+        }
+        game.send(
+            USERS[0],
+            PebblesAction::Restart {
+                difficulty: DifficultyLevel::Easy,
+                pebbles_count: 3,
+                max_pebbles_per_turn: 2,
+            },
+        );
+    }
+    let res = game.send(USERS[0], PebblesAction::Turn(2));
+    assert!(res.main_failed());
+}
+
+#[test]
+fn program_move() {
+    let sys = System::new();
+    init_game(&sys, 99, 3);
+    let game = sys.get_program(1).unwrap();
+    let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
+    let mut remaing = gmstate.pebbles_remaining;
+
+    let res = game.send(USERS[0], PebblesAction::GiveUp);
+    let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
+    assert!(res.contains(&(
+        USERS[0],
+        PebblesEvent::CounterTurn(gmstate.program_lastmove).encode()
+    )));
+    assert_eq!(
+        gmstate.pebbles_remaining,
+        remaing - gmstate.program_lastmove
+    );
+    remaing = gmstate.pebbles_remaining;
+    let res = game.send(USERS[0], PebblesAction::GiveUp);
+    let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
+    assert!(res.contains(&(
+        USERS[0],
+        PebblesEvent::CounterTurn(gmstate.program_lastmove).encode()
+    )));
+    assert_eq!(
+        gmstate.pebbles_remaining,
+        remaing - gmstate.program_lastmove
+    );
+    remaing = gmstate.pebbles_remaining;
+    let res = game.send(USERS[0], PebblesAction::GiveUp);
+    let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
+    assert!(res.contains(&(
+        USERS[0],
+        PebblesEvent::CounterTurn(gmstate.program_lastmove).encode()
+    )));
+    assert_eq!(
+        gmstate.pebbles_remaining,
+        remaing - gmstate.program_lastmove
+    );
+}
+
+#[test]
+fn winner() {
+    let sys = System::new();
+    init_game(&sys, 3, 1);
+    let game = sys.get_program(1).unwrap();
+
+    for _ in 0..100 {
+        game.send(
+            USERS[0],
+            PebblesAction::Restart {
+                difficulty: DifficultyLevel::Easy,
+                pebbles_count: 3,
+                max_pebbles_per_turn: 1,
+            },
+        );
+        let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
+        let remaing = gmstate.pebbles_remaining;
+        if remaing < 3 {
+            let res = game.send(USERS[0], PebblesAction::Turn(1));
+            assert!(res.contains(&(USERS[0], PebblesEvent::Won(Player::Program).encode())));
+        } else {
+            let res = game.send(USERS[0], PebblesAction::Turn(1));
+            assert!(res.contains(&(USERS[0], PebblesEvent::CounterTurn(1).encode())));
+            let res = game.send(USERS[0], PebblesAction::Turn(1));
+            assert!(res.contains(&(USERS[0], PebblesEvent::Won(Player::User).encode())));
+        }
+    }
+}
+
+#[test]
+fn restart() {
+    let sys = System::new();
+    init_game(&sys, 3, 1);
+    let game = sys.get_program(1).unwrap();
+    let res = game.send(
+        USERS[0],
+        PebblesAction::Restart {
+            difficulty: DifficultyLevel::Easy,
+            pebbles_count: 50,
+            max_pebbles_per_turn: 3,
+        },
+    );
+    assert!(!res.main_failed());
+    let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
+    assert_eq!(gmstate.pebbles_count, 50);
+    assert_eq!(gmstate.max_pebbles_per_turn, 3);
+}

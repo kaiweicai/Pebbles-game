@@ -1,31 +1,31 @@
 #![no_std]
 
 use gmeta::{In, InOut, Metadata, Out};
-use gstd::{prelude::*, ActorId};
+use gstd::{prelude::*};
 
 /// The contract metadata. Used by frontend apps & for describing the types of messages that can be
 /// sent in contract's entry points. See also [`Metadata`].
-pub struct ContractMetadata;
+pub struct PepplesMetadata;
 
-impl Metadata for ContractMetadata {
+impl Metadata for PepplesMetadata {
     type Init = In<PebblesInit>;
     type Handle = InOut<PebblesAction, PebblesEvent>;
     type Reply = ();
     type Others = ();
     type Signal = ();
-    type State = Out<GameStatus>;
+    type State = Out<GameState>;
 }
 
 //初始化游戏时，需要传递一些初始信息。 例如，鹅卵石的数量（ N ), 每转移除的最大卵石数 ( K ），难度级别
 #[derive(Encode, Decode, TypeInfo, Debug, Default, Clone)]
 pub struct PebblesInit {
-    pub difficult_level: DifficultLevel,
+    pub difficulty: DifficultyLevel,
     pub pebbles_count: u32,        // 可以移除总数N
     pub max_pebbles_per_turn: u32, // 每次移除的最大数量K
 }
 
 #[derive(Debug, Default, Clone, Encode, Decode, TypeInfo,PartialEq)]
-pub enum DifficultLevel {
+pub enum DifficultyLevel {
     Hard,
     #[default]
     Easy,
@@ -39,7 +39,7 @@ pub enum PebblesAction {
     Turn(u32),
     GiveUp,
     Restart {
-        difficult_level: DifficultLevel,
+        difficulty: DifficultyLevel,
         pebbles_count: u32,
         max_pebbles_per_turn: u32,
     },
@@ -61,11 +61,11 @@ pub enum Player {
 
 // 内部游戏状态应保留与游戏当前状态相关的所有信息。 一些信息是在初始化期间设置的，第一个玩家是随机选择的，一些数据在游戏过程中会改变。
 #[derive(Debug, Decode, Encode, TypeInfo, Clone,PartialEq)]
-pub struct GameStatus {
+pub struct GameState {
     pub pebbles_count: u32,
     pub max_pebbles_per_turn: u32,
     pub pebbles_remaining: u32,
-    pub difficult_level: DifficultLevel,
+    pub difficulty_level: DifficultyLevel,
     pub first_player: Player, // 当前用户是用户还是程序
     pub winner: Option<Player>,
 }
