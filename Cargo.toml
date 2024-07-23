@@ -7,20 +7,20 @@ edition = "2021"
 publish = false
 
 [package]
-name = "pebble-game"
+name = "pebbles-game"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
 
 [dependencies]
 gstd.workspace = true
-pebble-game-io.workspace = true
+pebbles-game-io.workspace = true
 parity-scale-codec.workspace = true
 scale-info.workspace = true
 
 [build-dependencies]
 gear-wasm-builder.workspace = true
-pebble-game-io.workspace = true
+pebbles-game-io.workspace = true
 
 [dev-dependencies]
 gtest.workspace = true
@@ -30,7 +30,7 @@ tokio.workspace = true
 # It's necessary to include all metawasm crates in the workspace section, otherwise they'll be
 # ignored by Cargo and won't be built.
 [workspace]
-members = ["io"]
+# members = ["state", "xtask"]
 
 [workspace.dependencies]
 gstd = "1.4.1"
@@ -38,10 +38,9 @@ gmeta = "1.4.1"
 gear-wasm-builder = "1.4.1"
 gtest = "1.4.1"
 gclient = "1.4.1"
-pebble-game-io.path = "io"
+pebbles-game-io.path = "io"
 tokio = "1"
 xshell = "0.2"
 anyhow = "1"
 parity-scale-codec = { version = "3", default-features = false }
 scale-info = { version = "2", default-features = false }
-

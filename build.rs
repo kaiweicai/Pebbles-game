@@ -1,5 +1,5 @@
-use pebble_game_io::PepplesMetadata;
+use pebbles_game_io::PebblesMetadata;
 
 fn main() {
-    gear_wasm_builder::build_with_metadata::<PepplesMetadata>();
+    gear_wasm_builder::build_with_metadata::<PebblesMetadata>();
 }

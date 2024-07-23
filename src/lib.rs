@@ -1,7 +1,7 @@
 #![no_std]
 
 use gstd::{debug, exec, msg, prelude::*};
-use pebble_game_io::*;
+use pebbles_game_io::*;
 
 #[derive(Debug, Default, Clone, Encode, Decode, TypeInfo)]
 pub struct PebbleGame {
@@ -105,7 +105,7 @@ extern "C" fn init() {
 #[no_mangle]
 extern "C" fn handle() {
     let action: PebblesAction = msg::load().expect("Could not load Action");
-    let game = unsafe { PEBBLE_GAME.as_mut().expect("State isn't initialized") };
+    let game = unsafe { PEBBLE_GAME.get_or_insert(Default::default()) };
     game.program_lastmove = 0;
     match action {
         PebblesAction::Turn(count) => {

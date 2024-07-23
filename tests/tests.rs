@@ -1,7 +1,7 @@
 use gstd::Encode;
 use gtest::{Program, System};
-use pebble_game::PebbleGame;
-use pebble_game_io::{DifficultyLevel, PebblesAction, PebblesEvent, PebblesInit, Player};
+use pebbles_game::*;
+use pebbles_game_io::*;
 
 const USERS: &[u64] = &[3, 4, 5];
 
@@ -21,7 +21,7 @@ fn init_game(sys: &System, total: u32, turn_max: u32) {
     assert!(!res.main_failed());
 
     let gm: PebbleGame = game.read_state(0).expect("Invalid state.");
-    assert_eq!(gm.pebbles_count, total,"pebbles_count error, {}, {}",gm.pebbles_count,total);
+    assert_eq!(gm.pebbles_count, total);
     assert_eq!(gm.max_pebbles_per_turn, turn_max);
     match gm.first_player {
         Player::User => assert_eq!(gm.pebbles_count, gm.pebbles_remaining),
@@ -30,7 +30,7 @@ fn init_game(sys: &System, total: u32, turn_max: u32) {
 }
 
 #[test]
-fn init_success() {
+fn init_successed() {
     let sys = System::new();
     sys.init_logger();
 
