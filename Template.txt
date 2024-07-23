@@ -1,2 +1,2 @@
 Link to your homework: https://github.com/kaiweicai/Pebbles-game.git
-gear program address:https://idea.gear-tech.io/state/full/0x4071afc1581286ce1c2c493610faceb7e99b5e8340e4f3584bde4930f0e839ae?node=wss%3A%2F%2Ftestnet.vara.network
+gear program address:https://idea.gear-tech.io/programs/0x5103d44c1e25ffde8b79f64a11b01054a82ccc5c4d253bda64f0b28c2f930a2f?node=wss%3A%2F%2Ftestnet.vara.network
