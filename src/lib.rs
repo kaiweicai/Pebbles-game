@@ -39,7 +39,7 @@ impl PebbleGame {
     fn program_move(&mut self) {
         let mut count = 1;
         if self.max_pebbles_per_turn != 1 {
-            count = program_turn_gen(self.difficulty.clone(), self.max_pebbles_per_turn);
+            count = program_turn_gen(self.difficulty.clone(), self.max_pebbles_per_turn,self.pebbles_remaining);
         }
         if count > self.pebbles_remaining {
             count = self.pebbles_remaining;
@@ -51,7 +51,7 @@ impl PebbleGame {
             msg::reply(PebblesEvent::Won(Player::Program), 0).unwrap();
             return;
         }
-        debug!("turncount=={}", self.pebbles_count - self.pebbles_remaining);
+        debug!("turn count=={}", self.pebbles_count - self.pebbles_remaining);
         msg::reply(PebblesEvent::CounterTurn(count), 0).unwrap();
     }
     fn restart(
@@ -112,7 +112,8 @@ extern "C" fn handle() {
             game.user_move(count);
         }
         PebblesAction::GiveUp => {
-            game.program_move();
+            game.winner = Some(Player::Program);
+            msg::reply(PebblesEvent::Won(Player::Program), 0).unwrap();
         }
         PebblesAction::Restart {
             difficulty,
@@ -137,7 +138,7 @@ pub fn get_random_u32() -> u32 {
 }
 
 
-pub fn program_turn_gen(difficulty: DifficultyLevel, max_per_turn: u32) -> u32 {
+pub fn program_turn_gen(difficulty: DifficultyLevel, max_per_turn: u32,remain_num:u32) -> u32 {
     match difficulty {
         DifficultyLevel::Easy => {
             let mut count = get_random_u32() % max_per_turn;
@@ -145,7 +146,13 @@ pub fn program_turn_gen(difficulty: DifficultyLevel, max_per_turn: u32) -> u32 {
             count
         }
         DifficultyLevel::Hard => {
-            let mut count = get_random_u32() % max_per_turn;
+            // 尽量让剩余的量为N+1,则用户选择任何数都会使剩余的量小于N。
+            let mut count = 0;
+            if remain_num - max_per_turn < max_per_turn {
+                count =  remain_num - max_per_turn - 1;
+                return count;
+            }
+            count = get_random_u32() % max_per_turn;
             if count / 2 < max_per_turn {
                 count = get_random_u32() % max_per_turn;
             }

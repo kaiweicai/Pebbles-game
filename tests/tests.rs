@@ -141,44 +141,22 @@ fn user_move_failed2() {
 }
 
 #[test]
-fn program_move() {
+fn user_give_up() {
     let sys = System::new();
     init_game(&sys, 99, 3);
     let game = sys.get_program(1).unwrap();
-    let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
-    let mut remaing = gmstate.pebbles_remaining;
-
+    let game_state: PebbleGame = game.read_state(0).expect("Invalid state.");
+    let mut remaining = game_state.pebbles_remaining;
+    // TODO ddd program move action
     let res = game.send(USERS[0], PebblesAction::GiveUp);
-    let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
+    let game_state: PebbleGame = game.read_state(0).expect("Invalid state.");
     assert!(res.contains(&(
         USERS[0],
-        PebblesEvent::CounterTurn(gmstate.program_lastmove).encode()
-    )));
+        PebblesEvent::Won(Player::Program).encode()
+    )),"res contains user give up. Program won");
     assert_eq!(
-        gmstate.pebbles_remaining,
-        remaing - gmstate.program_lastmove
-    );
-    remaing = gmstate.pebbles_remaining;
-    let res = game.send(USERS[0], PebblesAction::GiveUp);
-    let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
-    assert!(res.contains(&(
-        USERS[0],
-        PebblesEvent::CounterTurn(gmstate.program_lastmove).encode()
-    )));
-    assert_eq!(
-        gmstate.pebbles_remaining,
-        remaing - gmstate.program_lastmove
-    );
-    remaing = gmstate.pebbles_remaining;
-    let res = game.send(USERS[0], PebblesAction::GiveUp);
-    let gmstate: PebbleGame = game.read_state(0).expect("Invalid state.");
-    assert!(res.contains(&(
-        USERS[0],
-        PebblesEvent::CounterTurn(gmstate.program_lastmove).encode()
-    )));
-    assert_eq!(
-        gmstate.pebbles_remaining,
-        remaing - gmstate.program_lastmove
+        game_state.pebbles_remaining,
+        remaining - game_state.program_lastmove
     );
 }
 
